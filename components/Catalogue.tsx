@@ -1,11 +1,28 @@
-"use client";
-
-import Image from "next/image";
 import Link from "next/link";
-import { productCategories } from "@/lib/catalogue";
+import { listPublishedCategories } from "@/lib/queries/categories";
 import Reveal from "./Reveal";
+import SafeImage from "./SafeImage";
 
-export default function Catalogue() {
+export default async function Catalogue() {
+  let categories: Awaited<ReturnType<typeof listPublishedCategories>> = [];
+
+  try {
+    categories = await listPublishedCategories();
+  } catch (error) {
+    console.error("Failed to load categories", error);
+  }
+
+  const homepageCategories = categories.filter((category) =>
+    ["hang-tags", "woven-labels", "printed-labels", "heat-transfer"].includes(
+      category.slug,
+    ),
+  );
+
+  const display =
+    homepageCategories.length > 0
+      ? homepageCategories
+      : categories.slice(0, 4);
+
   return (
     <section
       id="catalogue"
@@ -31,47 +48,53 @@ export default function Catalogue() {
           </Reveal>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-          {productCategories.map((category, index) => (
-            <Reveal
-              key={category.id}
-              as="article"
-              delay={Math.min(index * 100, 300)}
-              className="group flex min-w-0 flex-col overflow-hidden"
-            >
-              <Link
-                href={`/catalogue?category=${category.slug}`}
-                className="relative aspect-[4/3] overflow-hidden bg-brown/5"
+        {display.length === 0 ? (
+          <p className="py-12 text-center font-sans text-sm text-brown-muted">
+            Categories will appear here once published in the admin CRM.
+          </p>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+            {display.map((category, index) => (
+              <Reveal
+                key={category.id}
+                as="article"
+                delay={Math.min(index * 100, 300)}
+                className="group flex min-w-0 flex-col overflow-hidden"
               >
-                <Image
-                  src={category.image}
-                  alt={category.imageAlt}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                />
-              </Link>
-              <div className="flex flex-1 flex-col bg-[#ead7d1] px-5 py-5 sm:px-6 sm:py-6">
-                <p className="mb-2 font-sans text-[10px] font-medium uppercase tracking-[0.2em] text-gold sm:text-[11px]">
-                  {category.variants}
-                </p>
-                <h3 className="mb-3 font-serif text-2xl font-medium text-brown sm:text-[1.65rem]">
-                  {category.title}
-                </h3>
-                <p className="mb-6 flex-1 font-sans text-[12px] leading-relaxed text-brown-muted sm:text-[13px]">
-                  {category.features}
-                </p>
                 <Link
                   href={`/catalogue?category=${category.slug}`}
-                  className="inline-flex items-center gap-2 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-gold transition-opacity hover:opacity-70 sm:text-xs"
+                  className="relative aspect-[4/3] overflow-hidden bg-brown/5"
                 >
-                  Explore
-                  <span aria-hidden="true">→</span>
+                  <SafeImage
+                    src={category.image_url}
+                    alt={category.image_alt || category.title}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                  />
                 </Link>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+                <div className="flex flex-1 flex-col bg-[#ead7d1] px-5 py-5 sm:px-6 sm:py-6">
+                  <p className="mb-2 font-sans text-[10px] font-medium uppercase tracking-[0.2em] text-gold sm:text-[11px]">
+                    {category.variants_label}
+                  </p>
+                  <h3 className="mb-3 font-serif text-2xl font-medium text-brown sm:text-[1.65rem]">
+                    {category.title}
+                  </h3>
+                  <p className="mb-6 flex-1 font-sans text-[12px] leading-relaxed text-brown-muted sm:text-[13px]">
+                    {category.features}
+                  </p>
+                  <Link
+                    href={`/catalogue?category=${category.slug}`}
+                    className="inline-flex items-center gap-2 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-gold transition-opacity hover:opacity-70 sm:text-xs"
+                  >
+                    Explore
+                    <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -1,40 +1,54 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import {
-  catalogueItems,
-  categoryFilters,
-  categoryToSlug,
-  slugToCategory,
-  type CategoryFilter,
-} from "@/lib/catalogue";
+import { useMemo, useState } from "react";
 import Reveal from "./Reveal";
+import SafeImage from "./SafeImage";
+
+export type CatalogueCategory = {
+  id: string;
+  title: string;
+  slug: string;
+};
+
+export type CatalogueProduct = {
+  id: string;
+  title: string;
+  meta: string;
+  description: string;
+  image_url: string;
+  image_alt: string;
+  category_slug?: string;
+  category_title?: string;
+};
 
 type FullCatalogueProps = {
+  categories: CatalogueCategory[];
+  products: CatalogueProduct[];
   initialCategory?: string;
 };
 
 export default function FullCatalogue({
+  categories,
+  products,
   initialCategory = "all",
 }: FullCatalogueProps) {
-  const [active, setActive] = useState<CategoryFilter>(
-    slugToCategory(initialCategory),
+  const [active, setActive] = useState(
+    initialCategory && initialCategory !== "all" ? initialCategory : "all",
   );
 
-  useEffect(() => {
-    setActive(slugToCategory(initialCategory));
-  }, [initialCategory]);
+  const filters = useMemo(
+    () => [{ title: "All", slug: "all" }, ...categories],
+    [categories],
+  );
 
   const filtered = useMemo(() => {
-    if (active === "All") return catalogueItems;
-    return catalogueItems.filter((item) => item.category === active);
-  }, [active]);
+    if (active === "all") return products;
+    return products.filter((item) => item.category_slug === active);
+  }, [active, products]);
 
-  function selectCategory(category: CategoryFilter) {
-    setActive(category);
-    const slug = categoryToSlug(category);
+  function selectCategory(slug: string) {
+    setActive(slug);
     const url = slug === "all" ? "/catalogue" : `/catalogue?category=${slug}`;
     window.history.replaceState(null, "", url);
   }
@@ -60,20 +74,20 @@ export default function FullCatalogue({
 
         <Reveal delay={120} className="-mx-4 mb-10 sm:mx-0 sm:mb-14">
           <div className="flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
-            {categoryFilters.map((category) => {
-              const isActive = active === category;
+            {filters.map((category) => {
+              const isActive = active === category.slug;
               return (
                 <button
-                  key={category}
+                  key={category.slug}
                   type="button"
-                  onClick={() => selectCategory(category)}
+                  onClick={() => selectCategory(category.slug)}
                   className={`shrink-0 border px-3.5 py-2.5 font-sans text-[10px] font-medium uppercase tracking-[0.16em] transition-colors sm:px-4 sm:text-xs sm:tracking-[0.18em] ${
                     isActive
                       ? "border-brown bg-brown text-cream"
                       : "border-brown/40 bg-transparent text-brown hover:border-brown"
                   }`}
                 >
-                  {category}
+                  {category.title}
                 </button>
               );
             })}
@@ -89,9 +103,9 @@ export default function FullCatalogue({
               className="group flex min-w-0 flex-col"
             >
               <div className="relative mb-5 aspect-[4/3] overflow-hidden bg-brown/5">
-                <Image
-                  src={item.image}
-                  alt={item.imageAlt}
+                <SafeImage
+                  src={item.image_url}
+                  alt={item.image_alt || item.title}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"

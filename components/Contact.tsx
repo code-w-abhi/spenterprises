@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useActionState } from "react";
 import Reveal from "./Reveal";
+import { submitInquiry, type ContactState } from "@/app/actions/contact";
 
 const CONTACT_EMAIL = "lucrative.spe@gmail.com";
 const CONTACT_PHONE = "+91-70095 21005";
@@ -102,23 +103,13 @@ const fieldClass =
 const labelClass =
   "font-sans text-[10px] font-medium uppercase tracking-[0.22em] text-white/50";
 
-export default function Contact() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [product, setProduct] = useState("");
-  const [message, setMessage] = useState("");
-  const [sent, setSent] = useState(false);
+const initialState: ContactState = { ok: false };
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const subject = encodeURIComponent(`Inquiry from ${name || "website"}`);
-    const body = encodeURIComponent(
-      `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nProduct of Interest: ${product}\n\n${message}`,
-    );
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
-    setSent(true);
-  }
+export default function Contact() {
+  const [state, formAction, pending] = useActionState(
+    submitInquiry,
+    initialState,
+  );
 
   return (
     <section
@@ -156,10 +147,7 @@ export default function Contact() {
           </Reveal>
 
           <Reveal delay={260}>
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col gap-6 sm:gap-7"
-            >
+            <form action={formAction} className="flex flex-col gap-6 sm:gap-7">
               <div className="grid gap-6 sm:grid-cols-2 sm:gap-7">
                 <label className="flex min-w-0 flex-col gap-2">
                   <span className={labelClass}>Name</span>
@@ -168,8 +156,6 @@ export default function Contact() {
                     name="name"
                     required
                     placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
                     className={fieldClass}
                   />
                 </label>
@@ -180,8 +166,6 @@ export default function Contact() {
                     name="email"
                     required
                     placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     className={fieldClass}
                   />
                 </label>
@@ -193,8 +177,6 @@ export default function Contact() {
                   type="tel"
                   name="phone"
                   placeholder="+91 ..."
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
                   className={fieldClass}
                 />
               </label>
@@ -205,8 +187,6 @@ export default function Contact() {
                   type="text"
                   name="product"
                   placeholder="e.g. Woven Labels, Foiling Tags..."
-                  value={product}
-                  onChange={(e) => setProduct(e.target.value)}
                   className={fieldClass}
                 />
               </label>
@@ -218,23 +198,22 @@ export default function Contact() {
                   required
                   rows={3}
                   placeholder="Tell us about your requirements..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
                   className={`${fieldClass} resize-none`}
                 />
               </label>
 
               <button
                 type="submit"
-                className="mt-1 w-full bg-gold px-7 py-4 font-sans text-xs font-medium uppercase tracking-[0.22em] text-white transition-opacity hover:opacity-90 sm:mt-2 sm:w-auto sm:self-start"
+                disabled={pending}
+                className="mt-1 w-full bg-gold px-7 py-4 font-sans text-xs font-medium uppercase tracking-[0.22em] text-white transition-opacity hover:opacity-90 disabled:opacity-60 sm:mt-2 sm:w-auto sm:self-start"
               >
-                Send Inquiry
+                {pending ? "Sending..." : "Send Inquiry"}
               </button>
 
-              {sent && (
-                <p className="break-words font-sans text-xs text-white/50">
-                  Your email client should open shortly. If it does not, write
-                  to{" "}
+              {state.ok && (
+                <p className="font-sans text-xs text-white/60">
+                  Thank you — your inquiry was received. We usually respond
+                  within 24 hours. You can also reach us at{" "}
                   <a
                     href={`mailto:${CONTACT_EMAIL}`}
                     className="underline underline-offset-2"
@@ -243,6 +222,10 @@ export default function Contact() {
                   </a>
                   .
                 </p>
+              )}
+
+              {state.error && (
+                <p className="font-sans text-xs text-red-200">{state.error}</p>
               )}
             </form>
           </Reveal>
