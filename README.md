@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# S.P. Enterprises
 
-## Getting Started
+Marketing site for S.P. Enterprises — branding and packaging solutions since 2002.
 
-First, run the development server:
+Built with **Next.js** (App Router), **TypeScript**, and **Tailwind CSS**. Ready to deploy on **Vercel**.
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` | Create a production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | Run ESLint |
 
-## Learn More
+## Deploy to Vercel
 
-To learn more about Next.js, take a look at the following resources:
+1. Push this repo to GitHub (or GitLab / Bitbucket).
+2. Go to [vercel.com/new](https://vercel.com/new) and import the repository.
+3. Keep the default Next.js settings (Framework Preset: Next.js, Build Command: `next build`).
+4. Click **Deploy**.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Or from the CLI:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm i -g vercel
+vercel
+```
 
-## Deploy on Vercel
+No environment variables are required for the current mailto-based inquiry form.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contact form
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The Inquire form opens the visitor’s email client via `mailto:inquire@spenterprises.com`. Update the address in `components/Contact.tsx` when you have the real inbox, or later swap it for Resend / Formspree.
+
+## Project structure
+
+```
+app/
+  layout.tsx      # Fonts + metadata
+  page.tsx        # Landing page composition
+  globals.css     # Design tokens + motion
+components/
+  Header.tsx
+  Hero.tsx
+  VerticalRail.tsx
+  Products.tsx
+  Catalogue.tsx
+  About.tsx
+  Contact.tsx
+  Footer.tsx
+  Section.tsx
+```
